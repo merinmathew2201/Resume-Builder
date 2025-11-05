@@ -7,10 +7,14 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { TextField } from '@mui/material';
 import { FaXmark } from "react-icons/fa6";
+import { useNavigate } from 'react-router-dom';
+import { addResumeAPI } from '../services/allAPI';
 
 const steps = ['Basic Informations','Contact Details','Educational Details','Work Experience','Skills and Certifications','Review & Submit'];
 
 function UserInputs({resumeDetails,setResumeDetails}) {
+
+  const navigate = useNavigate()
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const skillSuggestionArray = ['COMMUNICATION','JAVASCRIPT','REACT','ANGULAR','MONGO DB','NODE JS']
@@ -62,6 +66,30 @@ function UserInputs({resumeDetails,setResumeDetails}) {
   const handleReset = () => {
     setActiveStep(0);
   };
+
+  const handleAddResume = async ()=>{
+    const {fullName,jobTitle,location} = resumeDetails
+    if(!fullName || !jobTitle ||!location){
+      alert("please fill the form completely!!")
+    }else{
+      console.log("api call");
+      try{
+        const result = await addResumeAPI(resumeDetails)
+        console.log(result);
+        if(result.status==201){
+          alert("Resume added successfully")
+          const {id} = result.data
+          // navigate to view page :;resume/id/view
+          navigate(`/resume/${id}/view`)
+        }
+        
+      }catch(err){
+        console.log(err);
+        
+      }
+      
+    }
+  }
  
   const addSkill = (skill)=>{
     if(resumeDetails.skills?.map(data=>data.toLowerCase()).includes(skill.toLowerCase())){
@@ -82,7 +110,7 @@ function UserInputs({resumeDetails,setResumeDetails}) {
         <div>
           <h3>Personal Details</h3>
           <div className="p-3 row">
-            {/* spread operator is used to spread the all details in that object */}
+            {/* to get data from text field use onchange event to bind with state and spread state & update one field only  spread operator is used to spread the all details in that object */}
             <TextField value={resumeDetails.fullName} onChange={e=>setResumeDetails({...resumeDetails,fullName:e.target.value})} id="standard-basic-name" label="Full Name" variant="standard" />
             <TextField value={resumeDetails.jobTitle} onChange={e=>setResumeDetails({...resumeDetails,jobTitle:e.target.value})} id="standard-basic-job" label="Job Title" variant="standard" />
             <TextField value={resumeDetails.location} onChange={e=>setResumeDetails({...resumeDetails,location:e.target.value})} id="standard-basic-location" label="Location" variant="standard" />
@@ -218,9 +246,12 @@ function UserInputs({resumeDetails,setResumeDetails}) {
                 Skip
               </Button>
             )}
-            <Button onClick={handleNext}>
-              {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-            </Button>
+            {
+            activeStep === steps.length - 1 ?
+             <Button onClick={handleAddResume}>Finish</Button>  : 
+             <Button onClick={handleNext}>Next</Button>
+            }
+            
           </Box>
         </React.Fragment>
       )}
