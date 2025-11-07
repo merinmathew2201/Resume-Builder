@@ -5,11 +5,10 @@ import { FaFileDownload } from "react-icons/fa";
 import { IoReload } from "react-icons/io5";
 import { Link, useParams } from 'react-router-dom';
 import { FaBackward } from "react-icons/fa6";
-import { viewResumeAPI } from '../services/allAPI';
+import { addHistoryAPI, viewResumeAPI } from '../services/allAPI';
 import Edit from '../components/Edit';
 import { jsPDF } from "jspdf";
 import html2canvas from 'html2canvas';
-
 
 function ViewResume() {
   const {id} = useParams()
@@ -43,8 +42,18 @@ function ViewResume() {
     const imgHeight = doc.internal.pageSize.getHeight()
     doc.addImage(imgURL,'PNG',0,0,imgWidth,imgHeight)
     doc.save(`${resumeDetails?.fullName}-resume.pdf`)
-    
 
+    // date & time
+    const localDateTime = new Date()
+    const timeStamp = `${localDateTime.toLocaleDateString()},${localDateTime.toLocaleTimeString()}`
+    
+    // api call
+    try{
+      await addHistoryAPI({timeStamp,imgURL})
+    }catch(err){
+      console.log(err);
+      
+    }
   }
   
 
